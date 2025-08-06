@@ -5,6 +5,7 @@ pathlib2>=2.3.7; python_version < '3.4'
 
 # gRPC and protobuf
 grpcio>=1.65.0
+grpcio-tools>=1.65.0
 protobuf>=4.25.0,<5.0.0
 
 # Data processing

@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  stox-container:
+    image: stox-agent:latest
+    container_name: stox-agent
+    ports:
+      - "50081:50081"
+    environment:
+      - GOOGLE_API_KEY= 
+    env_file:
+      - .env  # Optional: load environment variables from .env file
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import grpc; import seo_agent_pb2_grpc; import seo_agent_pb2; channel = grpc.insecure_channel('localhost:50081'); stub = seo_agent_pb2_grpc.SEOAgentServiceStub(channel); stub.HealthCheck(seo_agent_pb2.HealthCheckRequest(), timeout=5); print('Healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      # Optional: mount logs directory
+      - ./logs:/app/logs
+    networks:
+      - seo-network
+    depends_on:
+      - stox-seo-service
+
+  stox-seo-service:
+    image: stox-seo-service:latest
+    container_name: stox-seo-service
+    ports:
+      - "50071:50071"
+    environment:
+      - GOOGLE_API_KEY= 
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "health_check.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - seo-network
+networks:
+  seo-network:
+    driver: bridge

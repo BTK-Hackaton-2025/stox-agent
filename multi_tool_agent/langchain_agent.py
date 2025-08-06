@@ -47,7 +47,7 @@ class SEOLangChainAgent:
         self.llm = ChatGoogleGenerativeAI(
             model="gemini-2.0-flash",
             temperature=0,
-            google_api_key=os.getenv("GOOGLE_API_KEY")
+            google_api_key=" "
         )
         
         # Create tools

@@ -36,7 +36,7 @@ pip install -r requirements.txt
 python grpc_server.py
 ```
 
-The server will run on `localhost:50051` by default.
+The server will run on `localhost:50081` by default.
 
 ### Testing the Server
 
@@ -53,7 +53,7 @@ import seo_agent_pb2
 import seo_agent_pb2_grpc
 
 # Connect to server
-channel = grpc.insecure_channel('localhost:50051')
+channel = grpc.insecure_channel('localhost:50081')
 stub = seo_agent_pb2_grpc.SEOAgentServiceStub(channel)
 
 # Health check

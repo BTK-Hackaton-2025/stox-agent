@@ -1,6 +1,6 @@
 import requests
-from .grpcclients import product_image_analyzer_pb2
-from .grpcclients import product_image_analyzer_pb2_grpc
+from .grpcclients import product_analyzer_pb2
+from .grpcclients import product_analyzer_pb2_grpc
 import grpc
 import base64
 import os
@@ -18,17 +18,28 @@ def seo_analysis(url: str) -> str:
         A formatted string with the SEO analysis results
     """
     try:
-        channel = grpc.insecure_channel('localhost:50071')
-        stub = product_image_analyzer_pb2_grpc.ProductImageAnalyzerStub(channel)
+        # Use environment variables for service discovery in Docker
+        seo_host = os.getenv('SEO_SERVICE_HOST', 'localhost')
+        seo_port = os.getenv('SEO_SERVICE_PORT', '50071')
+        seo_address = f'{seo_host}:{seo_port}'
+        
+        channel = grpc.insecure_channel(seo_address)
+        stub = product_analyzer_pb2_grpc.ProductAnalyzerStub(channel)
 
-        request = product_image_analyzer_pb2.ImageUrlRequest(
+        request = product_analyzer_pb2.ImageUrlRequest(
             image_url=url
         )
         
-        response = stub.GenerateFromImageUrl(request)
+        # Set a timeout for the gRPC call
+        response = stub.GenerateFromImageUrl(request, timeout=60.0)
+        
+        # Close the channel
+        channel.close()
         
         # Format the response as a readable string
         return response
+    except grpc.RpcError as e:
+        return f"Error analyzing image URL: <_InactiveRpcError of RPC that terminated with:\n  status = {e.code()}\n  details = \"{e.details()}\"\n  debug_error_string = \"{e.debug_error_string()}\">\nÜzgünüm, görsel URL'sini analiz ederken bir hata oluştu. Lütfen daha sonra tekrar deneyin."
     except Exception as e:
         return f"Error analyzing image URL: {str(e)}"
 
